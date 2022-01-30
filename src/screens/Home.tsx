@@ -24,15 +24,18 @@ const Home = () => {
     [Categories.Harness]: false,
     [Categories.Horse]: false,
   });
-  const { data, error, isLoading } = useGetNextRacesQuery();
+  const { data, error, isLoading } = useGetNextRacesQuery(10, {
+    pollingInterval: 1000,
+  });
 
-  let IDs: Array<string> = [];
   let races: Array<Race> = [];
   let sectionData = [];
 
   if (data) {
-    IDs = data.next_to_go_ids;
-    races = Object.values(data.race_summaries);
+    races = Object.values(data.race_summaries).filter(
+      (value) =>
+        Math.round(Date.now() / 1000 - value.advertised_start.seconds) < 60
+    );
     sectionData.push({
       title: Categories.Greyhound,
       data: races
@@ -95,12 +98,12 @@ const Home = () => {
                   {item.advertised_start.seconds - Date.now() / 1000 < 0
                     ? `-${Math.floor(
                         (Date.now() / 1000 - item.advertised_start.seconds) / 60
-                      )}m ${Math.floor(
+                      )}m ${Math.round(
                         (Date.now() / 1000 - item.advertised_start.seconds) % 60
                       )}s`
                     : `${Math.floor(
                         (item.advertised_start.seconds - Date.now() / 1000) / 60
-                      )}m ${Math.floor(
+                      )}m ${Math.round(
                         (item.advertised_start.seconds - Date.now() / 1000) % 60
                       )}s`}
                 </Text>
